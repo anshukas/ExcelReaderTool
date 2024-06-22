@@ -1,36 +1,44 @@
 package com.excelreader.tool;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.poi.ss.usermodel.*;
-
 import java.io.File;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ReadFromExcelConvertToJson {
 
-	private static final String SAMPLE_XLSX_FILE_PATH = "C:\\Users\\ss186034\\OneDrive - NCR ATLEOS\\Documents\\Tickets\\partnerUsersQ1.xlsx";
+	private static final String SAMPLE_XLSX_FILE_PATH = "lc-content.xlsx";
 
     public static void main(String[] args) {
-        Object json = processSmallFile(SAMPLE_XLSX_FILE_PATH, "Sheet1");
-        System.out.println(json);
+        processSmallFile(SAMPLE_XLSX_FILE_PATH, "Clear");
     }
 
-    public static Object processSmallFile(final String filePath, final String sheetName) {
+    public static void processSmallFile(final String filePath, final String sheetName) {
         try (Workbook workbook = WorkbookFactory.create(new File(filePath))) {
-        	return getJsonObject(workbook, sheetName);
+        	 getJsonObject(workbook, sheetName);
         } catch (Exception exception) {
             exception.printStackTrace();
         }
-        return null;
     }
 
     public static Object getJsonObject(Workbook workbook, String sheetName) {
         try {
             Sheet sheet = getSheet(workbook, sheetName);
             List<String> headers = getHeaders(sheet);
-            List<Map<String, Object>> data = new ArrayList<>();
+            List<Map<String, Object>> dataListMap = new ArrayList<>();
             for (Row row : sheet) {
             	List<String> packageDetailsList = new ArrayList<>();
             	List<String> packagePillsList = new ArrayList<>();
@@ -58,10 +66,15 @@ public class ReadFromExcelConvertToJson {
                         if(o.toString() != "")
                         	rowMap.put(key, o);
                     }
-                    data.add(rowMap);
+                    dataListMap.add(rowMap);
                 }
             }
-            return new ObjectMapper().writeValueAsString(data);
+           // System.out.println("DataMap: "+dataListMap);
+            for (Map<String, Object> map : dataListMap) {
+            	String jsonStr = new ObjectMapper().writeValueAsString(map);
+            	System.out.println(jsonStr);
+			}
+            
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
